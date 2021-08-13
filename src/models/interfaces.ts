@@ -3,3 +3,8 @@ export interface QuestionType {
     id:   number;
     name: string;
 }
+
+export interface Question {
+    id: number;
+    content: string;
+}
