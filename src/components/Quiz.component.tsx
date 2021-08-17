@@ -1,7 +1,7 @@
 import axios from 'axios';
-import React, { useEffect, useState } from 'react';
+import React, { FormEvent, FormEventHandler, useEffect, useState } from 'react';
 import { RouteComponentProps, useHistory } from 'react-router';
-import { Question } from '../models/interfaces';
+import { Answer, Question } from '../models/interfaces';
 import { apiUrl } from './Menu.component';
 
 interface RouteParams {
@@ -16,7 +16,6 @@ const Quiz: React.FC<RouteComponentProps<RouteParams>> = (props) => {
     const [currentQuestion, setCurrentQuestion] = useState(0);
     
     useEffect(() => {
-        console.log('test');
         const type = props.match.params.type;
         const typeId = sessionStorage.getItem(type);
         if(!typeId){
@@ -25,14 +24,25 @@ const Quiz: React.FC<RouteComponentProps<RouteParams>> = (props) => {
         async function fetchQuestions(){
             const res = await axios.get(`${apiUrl}/types/find/${typeId}`);
             const questions: Question[] = res.data;
+            questions.forEach(async (question, i) => {
+                const res = await axios.get(`${apiUrl}/questions/${question.id}/answers`);
+                const answers: Answer[] = res.data;
+                questions[i].answers = answers;
+            });
             setQuestions(questions);
+            console.log(questions);
         }
         fetchQuestions();
     }, [props.match.params.type, history]);
 
+    const onQuestionAnswered = (e : FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        setCurrentQuestion(currentQuestion + 1);
+    } 
+
     return (
         <div className="container mx-auto">
-            <form>
+            <form onSubmit={onQuestionAnswered}>
                 <label className="text-4xl text-yellow-100">{questions[currentQuestion]?.content}</label>
                 <div className="flex flex-row mt-10">
                     <input
@@ -45,7 +55,6 @@ const Quiz: React.FC<RouteComponentProps<RouteParams>> = (props) => {
                         type="submit"
                         value="Answer!"
                         className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-r focus:outline-none focus:shadow-outline"
-                        onClick={() => setCurrentQuestion(currentQuestion + 1)}
                     />
                 </div>
             </form>

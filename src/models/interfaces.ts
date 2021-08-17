@@ -7,4 +7,10 @@ export interface QuestionType {
 export interface Question {
     id: number;
     content: string;
+    answers?: Answer[];
+}
+
+export interface Answer {
+    id: number;
+    content: string;
 }
